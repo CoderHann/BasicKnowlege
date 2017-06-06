@@ -27,8 +27,6 @@ public class SingleLinkedList<E> {
      */
     public void add(E e) {
 
-        add(length,e);
-
         Node<E> indexNode = footer;
         try {
             addElement(indexNode,new Node<>(e));
