@@ -1,10 +1,10 @@
-package coderhann.singlelinkedlist;
-
+package coderhann.doublelinkedlist;
 
 /**
- * Created by roki on 2017/5/27.
+ * Created by roki on 2017/6/14.
  */
-public class SingleLinkedList<E> {
+public class DoubleLinkedList<E> {
+
     /**
      * 存储结点数量
      */
@@ -69,13 +69,18 @@ public class SingleLinkedList<E> {
         if (frontElement == null) {
             if (header != null) { //插入位置为0，链表不为空
                 element.next = header;
+                header.previous = element;
                 header = element;
             } else { //链表长度为0，在首位添加数据
                 header = element;
             }
         } else {
             element.next = frontElement.next;
+            if (frontElement.hasNext()) {
+                frontElement.next.previous = element;
+            }
             frontElement.next = element;
+            element.previous = frontElement;
         }
 
         if (!element.hasNext()) {
@@ -98,17 +103,15 @@ public class SingleLinkedList<E> {
 
         Node<E> deletedNode = null;
         Node<E> indexNode = header;
-        Node<E> frontNode = null;
 
         while (index > 0) {
 
             if (index == 1) {
-                deletedNode = deleteElement(frontNode,indexNode);
+                deletedNode = deleteElement(indexNode.previous,indexNode);
                 break;
             }
 
             index--;
-            frontNode = indexNode;
             indexNode = indexNode.next;
         }
         return deletedNode.data;
@@ -124,16 +127,14 @@ public class SingleLinkedList<E> {
 
         Node<E> deletedNode = null;
         Node<E> indexNode = header;
-        Node<E> frontNode = null;
 
         while (indexNode != null) {
             if (indexNode.data == e) {
 
-                deletedNode = deleteElement(frontNode,indexNode);
+                deletedNode = deleteElement(indexNode.previous,indexNode);
                 break;
             }
 
-            frontNode = indexNode;
             indexNode = indexNode.next;
         }
         return deletedNode.data;
@@ -149,19 +150,23 @@ public class SingleLinkedList<E> {
     private Node<E> deleteElement(Node<E> frontElement,Node<E> element) {
 
         Node<E> deletedNode = element;
-        Node<E> preNode = null;
         if (frontElement == null) {
 
             header = element.next;
-            preNode = null;
+            if (header != null) {
+                header.previous = null;
+            }
+
         } else {
 
             frontElement.next = element.next;
-            preNode = frontElement;
+            if (element.next != null) {
+                element.next.previous = frontElement;
+            }
         }
 
         if (!deletedNode.hasNext()) {
-            footer = preNode;
+            footer = deletedNode.previous;
         }
         length--;
 
@@ -175,28 +180,22 @@ public class SingleLinkedList<E> {
     /**
      * 链表的反转[A,B,C,D]->[D,C,B,A]
      */
-    public void reverseSingleLinkedList() {
+    public void reverseDoubleLinkedList() {
 
-        Node<E> firstElement = header;
+        Node<E> tempNode = header;
+        while (tempNode != null) {
+            Node<E> nextNode = tempNode.next;
 
-        reverse(firstElement);
+            Node<E> temp = tempNode.previous;
+            tempNode.previous = tempNode.next;
+            tempNode.next = temp;
 
-        Node<E> tempElement = header;
-        header = footer;
-        footer = tempElement;
-        footer.next = null;
-    }
-
-
-    private void reverse(Node<E> currentElement) {
-
-        Node<E> nextElement = currentElement.next;
-
-        if (nextElement.hasNext()) {
-            reverse(nextElement);
-
+            tempNode = nextNode;
         }
-        nextElement.next = currentElement;
+
+        Node<E> temp = header;
+        header = footer;
+        footer = temp;
 
     }
 
@@ -253,12 +252,12 @@ public class SingleLinkedList<E> {
     }
 
     /**
-     * 打印单链表的数据
+     * 正向打印双链表的数据
      */
-    public void printSingleLinkedList() {
+    public void printListFront() {
 
         Node<E> node = header;
-        System.out.print("SingleLinkedList:[");
+        System.out.print("DoubleLinkedList:[");
         while (node != null) {
 
             System.out.print(node.data);
@@ -270,11 +269,28 @@ public class SingleLinkedList<E> {
         }
         System.out.println("]");
     }
+    /**
+     * 反向打印双链表的数据
+     */
+    public void printListBack() {
 
+        Node<E> node = footer;
+        System.out.print("DoubleLinkedList:[");
+        while (node != null) {
 
+            System.out.print(node.data);
+            if (node.hasPrevious()) {
+                System.out.print(",");
+            }
+            node = node.previous;
 
+        }
+        System.out.println("]");
+    }
 }
 
+
+// 结点类
 class Node<E> {
 
     /**
@@ -283,12 +299,18 @@ class Node<E> {
     public E data;
 
     /**
+     * 前一个结点引用
+     */
+    public Node<E> previous;
+
+    /**
      * 下一个结点引用
      */
     public Node<E> next;
 
     public Node(E e) {
         data = e;
+        previous = null;
         next = null;
     }
 
@@ -298,5 +320,13 @@ class Node<E> {
      */
     public boolean hasNext() {
         return this.next != null;
+    }
+
+    /**
+     * 判断该结点是否有前置结点
+     * @return
+     */
+    public boolean hasPrevious() {
+        return this.previous != null;
     }
 }
